@@ -1,0 +1,18 @@
+{
+    "sourceFile": "lib/api.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1710380591358,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1710380591358,
+            "name": "Commit-0",
+            "content": "import axios from 'axios';\r\n\r\nexport default axios.create({\r\n  baseURL: `http://localhost:8000/`\r\n});"
+        }
+    ]
+}

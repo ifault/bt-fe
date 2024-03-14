@@ -1,0 +1,46 @@
+{
+    "sourceFile": "components/t_tasks.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 7,
+            "patches": [
+                {
+                    "date": 1710379135681,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1710379144122,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -24,9 +24,9 @@\n                 <TableHead>状态</TableHead>\r\n               </TableRow>\r\n             </TableHeader>\r\n             <TableBody>\r\n-              {devices.map((device: Device) => {\r\n+              {devices && devices.map((device: Device) => {\r\n                 return (\r\n                   <TableRow key={device.device_id}>\r\n                     <TableCell className=\"font-medium\">\r\n                       {device.device_id}\r\n"
+                },
+                {
+                    "date": 1710379581060,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -12,9 +12,9 @@\n   \r\n   import { Device } from '@/lib/utils'\r\n   import TCard from './t_card'\r\n   \r\n-  export default function TTasks({ devices }: { devices: Device[] }) {\r\n+  export default function TTasks({ tasks }: { tasks: Task[] }) {\r\n     return (\r\n       <div>\r\n         <TCard title=\"任务列表\">\r\n           <Table>\r\n"
+                },
+                {
+                    "date": 1710379592329,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -19,23 +19,14 @@\n         <TCard title=\"任务列表\">\r\n           <Table>\r\n             <TableHeader>\r\n               <TableRow>\r\n-                <TableHead>设备名</TableHead>\r\n-                <TableHead>状态</TableHead>\r\n+                <TableHead>ID</TableHead>\r\n+                <TableHead>任务名</TableHead>\r\n               </TableRow>\r\n             </TableHeader>\r\n             <TableBody>\r\n-              {devices && devices.map((device: Device) => {\r\n-                return (\r\n-                  <TableRow key={device.device_id}>\r\n-                    <TableCell className=\"font-medium\">\r\n-                      {device.device_id}\r\n-                    </TableCell>\r\n-                    <TableCell>{device.status}</TableCell>\r\n-                  </TableRow>\r\n-                )\r\n-              })}\r\n+              \r\n             </TableBody>\r\n           </Table>\r\n         </TCard>\r\n       </div>\r\n"
+                },
+                {
+                    "date": 1710379609791,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,9 +9,9 @@\n     TableRow,\r\n   } from '@/components/ui/table'\r\n   import axiso from 'axios'\r\n   \r\n-  import { Device } from '@/lib/utils'\r\n+  import { Task } from '@/lib/utils'\r\n   import TCard from './t_card'\r\n   \r\n   export default function TTasks({ tasks }: { tasks: Task[] }) {\r\n     return (\r\n@@ -21,8 +21,9 @@\n             <TableHeader>\r\n               <TableRow>\r\n                 <TableHead>ID</TableHead>\r\n                 <TableHead>任务名</TableHead>\r\n+                <TableHead>用户名</TableHead>\r\n               </TableRow>\r\n             </TableHeader>\r\n             <TableBody>\r\n               \r\n"
+                },
+                {
+                    "date": 1710379617581,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,8 +22,9 @@\n               <TableRow>\r\n                 <TableHead>ID</TableHead>\r\n                 <TableHead>任务名</TableHead>\r\n                 <TableHead>用户名</TableHead>\r\n+                <TableHead>状态</TableHead>\r\n               </TableRow>\r\n             </TableHeader>\r\n             <TableBody>\r\n               \r\n"
+                },
+                {
+                    "date": 1710379679789,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,38 @@\n+/* eslint-disable react/jsx-key */\r\n+import {\r\n+    Table,\r\n+    TableBody,\r\n+    TableCaption,\r\n+    TableCell,\r\n+    TableHead,\r\n+    TableHeader,\r\n+    TableRow,\r\n+  } from '@/components/ui/table'\r\n+  import axiso from 'axios'\r\n+  \r\n+  import { Task } from '@/lib/utils'\r\n+  import TCard from './t_card'\r\n+  \r\n+  export default function TTasks({ tasks }: { tasks: Task[] }) {\r\n+    return (\r\n+      <div>\r\n+        <TCard title=\"任务列表\">\r\n+          <Table>\r\n+            <TableHeader>\r\n+              <TableRow>\r\n+                <TableHead>ID</TableHead>\r\n+                <TableHead>任务名</TableHead>\r\n+                <TableHead>用户名</TableHead>\r\n+                <TableHead>状态</TableHead>\r\n+                <TableHead>操作</TableHead>\r\n+              </TableRow>\r\n+            </TableHeader>\r\n+            <TableBody>\r\n+              \r\n+            </TableBody>\r\n+          </Table>\r\n+        </TCard>\r\n+      </div>\r\n+    )\r\n+  }\r\n+  \n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1710379813692,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,39 @@\n+/* eslint-disable react/jsx-key */\r\n+import {\r\n+    Table,\r\n+    TableBody,\r\n+    TableCaption,\r\n+    TableCell,\r\n+    TableHead,\r\n+    TableHeader,\r\n+    TableRow,\r\n+  } from '@/components/ui/table'\r\n+  import axiso from 'axios'\r\n+  \r\n+  import { Task } from '@/lib/utils'\r\n+  import TCard from './t_card'\r\n+  \r\n+  export default function TTasks({ tasks }: { tasks: Task[] }) {\r\n+    return (\r\n+      <div>\r\n+        <TCard title=\"任务列表\">\r\n+          <Table>\r\n+            <TableHeader>\r\n+              <TableRow>\r\n+                <TableHead>ID</TableHead>\r\n+                <TableHead>任务名</TableHead>\r\n+                <TableHead>设备名</TableHead>\r\n+                <TableHead>用户名</TableHead>\r\n+                <TableHead>状态</TableHead>\r\n+                <TableHead>操作</TableHead>\r\n+              </TableRow>\r\n+            </TableHeader>\r\n+            <TableBody>\r\n+              \r\n+            </TableBody>\r\n+          </Table>\r\n+        </TCard>\r\n+      </div>\r\n+    )\r\n+  }\r\n+  \n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1710379135681,
+            "name": "Commit-0",
+            "content": "/* eslint-disable react/jsx-key */\r\nimport {\r\n    Table,\r\n    TableBody,\r\n    TableCaption,\r\n    TableCell,\r\n    TableHead,\r\n    TableHeader,\r\n    TableRow,\r\n  } from '@/components/ui/table'\r\n  import axiso from 'axios'\r\n  \r\n  import { Device } from '@/lib/utils'\r\n  import TCard from './t_card'\r\n  \r\n  export default function TTasks({ devices }: { devices: Device[] }) {\r\n    return (\r\n      <div>\r\n        <TCard title=\"任务列表\">\r\n          <Table>\r\n            <TableHeader>\r\n              <TableRow>\r\n                <TableHead>设备名</TableHead>\r\n                <TableHead>状态</TableHead>\r\n              </TableRow>\r\n            </TableHeader>\r\n            <TableBody>\r\n              {devices.map((device: Device) => {\r\n                return (\r\n                  <TableRow key={device.device_id}>\r\n                    <TableCell className=\"font-medium\">\r\n                      {device.device_id}\r\n                    </TableCell>\r\n                    <TableCell>{device.status}</TableCell>\r\n                  </TableRow>\r\n                )\r\n              })}\r\n            </TableBody>\r\n          </Table>\r\n        </TCard>\r\n      </div>\r\n    )\r\n  }\r\n  "
+        }
+    ]
+}

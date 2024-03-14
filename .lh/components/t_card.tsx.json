@@ -1,0 +1,22 @@
+{
+    "sourceFile": "components/t_card.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1710331557436,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1710331563845,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,5 +20,5 @@\n     </div>\r\n   );\r\n }\r\n \r\n-export default MyComponent;\n\\ No newline at end of file\n+export default TCard;\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1710331557436,
+            "name": "Commit-0",
+            "content": "import React from 'react';\r\nimport {\r\n    Card,\r\n    CardContent,\r\n    CardFooter,\r\n    CardHeader,\r\n    CardTitle,\r\n  } from '@/components/ui/card'\r\nfunction TCard({title, children}: {title: string, children: React.ReactNode}) {\r\n  return (\r\n    <div>\r\n      <Card>\r\n        <CardHeader>\r\n          <CardTitle>{title}</CardTitle>\r\n        </CardHeader>\r\n        <CardContent>\r\n            {children}\r\n        </CardContent>\r\n      </Card>\r\n    </div>\r\n  );\r\n}\r\n\r\nexport default MyComponent;"
+        }
+    ]
+}
