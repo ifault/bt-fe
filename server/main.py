@@ -1,5 +1,6 @@
 import json
 import os
+import signal
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer as OAuth
 from fastapi import Depends, FastAPI, HTTPException, WebSocket, BackgroundTasks
@@ -8,9 +9,11 @@ from tortoise import Tortoise
 from models import Orders
 from utils import register_redis, get_all_devices,handle_devices
 from models import TaskRequest, DeviceFreezeRequest, DevicesCapture, Login
+from jwt.exceptions import DecodeError,InvalidTokenError
+from starlette import status
 import base64
 import jwt
-
+import asyncio
 
 app = FastAPI()
 
@@ -28,25 +31,28 @@ app.add_middleware(
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     await websocket.accept()
-    print(websocket.client.host)
-    redis = app.redis
-    accounts = app.redis_accounts
     try:
+        token = await websocket.receive_text()
+        if(device_id == "manager"):
+            jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
+        redis = app.redis
+        accounts = app.redis_accounts
         while True:
             message = await websocket.receive_text()
             response = ""
             if device_id == "manager":
-                resposne = await get_all_devices(redis, accounts)
-                response = json.dumps(resposne)
+                response = await get_all_devices(redis, accounts)
+                response = json.dumps(response)
             else:
                 await handle_devices(websocket, redis, accounts, device_id) 
             if message != "ping":
                 pass
             await websocket.send_text(response)
-    except jwt.exceptions.InvalidTokenError:
-        await websocket.close()
+    except InvalidTokenError:
+        print("Invalid token")
+        await websocket.send_text("401")
     except Exception as e:
-        await websocket.close()
+        print("Other exception occurred")
 
 
 @app.post("/api/reset")
@@ -68,6 +74,9 @@ async def create_table_if_not_exists():
     except Exception as e:
         pass
 
+
+async def close_database_connection():
+    await Tortoise.close_connections()
 
 @app.on_event("startup")
 async def srartup_event():
@@ -123,12 +132,22 @@ def login(login: Login):
 @app.post("/api/verify")
 def verify(token: str = Depends(oauth2_scheme)):
     try:
-       print(token)
        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
        return {"token": token, "payload": payload}
     except:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+
+def handle_shutdown(signum, frame):
+    print("Shutting down...")
+    loop = asyncio.get_event_loop()
+    loop.stop()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_database_connection()
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="192.168.3.194", port=8000)
+    signal.signal(signal.SIGINT, handle_shutdown)
+    uvicorn.run(app, host="localhost", port=8000)

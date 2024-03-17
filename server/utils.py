@@ -36,7 +36,11 @@ def register_redis(app: FastAPI):
         app.redis_accounts = await redis_accounts()
         app.redis_order = await redis_order()
 
-
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        await app.redis.close()
+        await app.redis_accounts.close()
+        await app.redis_order.close()
 
 async def get_all_devices(redis, accounts):
     keys = await redis.keys('*')
