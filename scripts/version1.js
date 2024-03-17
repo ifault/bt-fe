@@ -36,13 +36,6 @@ function init_websocket(){
         init_websocket()
     }).on("closing", (code, reason, ws) => {
         init_websocket()
-    }).on("binary", (bytes, ws) => {
-        console.info("收到二进制消息:");
-        console.info("hex: ", bytes.hex());
-        console.info("base64: ", bytes.base64());
-        console.info("md5: ", bytes.md5());
-        console.info("size: ", bytes.size());
-        console.info("bytes: ", bytes.toByteArray());
     }).on("text", (text, ws) => {
         if(text){
             var message = JSON.parse($base64.decode(text))

@@ -1,1 +1,152 @@
-toast("this is test")
+let imgUrl = "/sdcard/Pictures/img.png";
+let server_url = "http://192.168.3.194:8000/api/freeze"
+function capture(){
+    if(!requestScreenCapture()){
+        log("没有开启截图权限")
+        exit();
+    }
+    captureScreen(imgUrl);
+}
+function monitroing(date){
+    console.log("开始监控"+date+"号门票")
+    while(!text("立即购买").exists());
+    while(!click("立即购买"));
+    sleep(500)
+    var bounds = text("选择到访日期").findOne().bounds()
+    var top = bounds.top
+    sleep(500)
+    text(date).findOne().click()
+    sleep(500)
+    var bounds = text("选择到访日期").findOne().bounds()
+    var top_changed = bounds.top
+    if(top != top_changed){
+        console.log("日期选择成功");
+    }else{
+        console.log("刷新日期")
+        sleep(1000)
+        back()
+        sleep(1000)
+        monitroing(date)
+    }
+}
+
+function getCurrentColor(){
+    threads.start(function ()
+    {
+        sleep(3000)
+        click(867, 1270)
+    })
+    if(!requestScreenCapture()){
+        log("getCurrentColor 没有开启截图权限")
+        exit();
+    }
+    var img = captureScreen();
+    return img.pixel(748, 1820)
+}
+
+function fillForm(){
+    while(!text("订单确认").exists());
+    while(!text("输入游客信息​").exists());
+    log("点击")
+    click(532, 1698)
+    sleep(500)
+    click(976, 945)
+    sleep(800)
+    input(0, "222403198502200023")
+    sleep(800)
+    click(500, 1500)
+    sleep(800)
+    click(976, 1525)
+    sleep(800)
+    input(2, "13052739901")
+    sleep(800)
+    click(560, 1612)
+    sleep(800)
+    var terms = textContains("我已阅读").findOne().bounds()
+    click(terms.left-20, terms.top)
+    sleep(800)
+}
+
+function book(){
+    log("开始确认订单")
+    while(!text("订单确认").exists());
+    log("进入订单确认页面")
+    sleep(500)
+    log("开始截图")
+    capture()
+    sleep(1500)
+    log("折叠订单")
+    click(140,700)
+    sleep(700)
+    log("配置身份证号码")
+    //toast("点击身份证号")
+    sleep(1000)
+    click(140, 1500)
+    sleep(1000)
+    //清空身份证
+    //toast("清空身份证")
+    click(980, 1500)
+    sleep(1000)
+    //toast("输入身份证")
+    input(0, "{{idcard}}")
+    sleep(1000)
+    //点击身份证号下方失去焦点
+    click(140, 1600)
+    sleep(500)
+    swipe(500, 1500, 500, 0, 50)
+    //sleep(1000)
+    //点击terms
+    log("截图")
+    var color = getCurrentColor()
+    sleep(5000)
+    log("确认条款")
+    if(color != -13927688){
+        toast("需要点击条款")
+        sleep(1000)
+        var terms = textContains("我已阅读").findOne().bounds()
+        click(terms.left-20, terms.top)
+        sleep(500)
+    }
+
+}
+function workflow(){
+    app.launchApp("迪士尼度假区")
+    while(!click("商城"));
+    while(!textContains("一日票/二日票").exists());
+    textContains("一日票/二日票").findOne().click()
+    sleep(1000)
+    if(text("继续体验").exists()){
+        text("继续体验").findOne().click()
+    }
+    while(!text("立即购买").exists());
+    while(!click("立即购买"));
+    while(!text("乐园门票").exists());
+    monitroing("{{day}}")
+    sleep(600)
+    indexInParent("7").depth("10").findOne().click()
+    sleep(500)
+    while(!click("立即购买"));
+    sleep(500)
+    fillForm()
+}
+var complete = threads.start(function(){
+    const invoke_complete = () => {
+        const url = server_url;
+        const data = {
+            id: '{{id}}',
+            device_id: '{{device_id}}'
+        };
+        http.postJson(url,data)
+    }
+    sleep(1000)
+    var homePackage = currentActivity()
+    console.log("checking complete")
+    while(homePackage != "com.mumu.launcher.Launcher"){
+        sleep(1000)
+        homePackage = currentActivity()
+    }
+    invoke_complete()
+    complete.interrupt();
+})
+
+workflow()

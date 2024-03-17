@@ -32,8 +32,8 @@ app.add_middleware(
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     await websocket.accept()
     try:
-        token = await websocket.receive_text()
         if(device_id == "manager"):
+            token = await websocket.receive_text()
             jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
         redis = app.redis
         accounts = app.redis_accounts
@@ -150,4 +150,4 @@ async def shutdown_event():
 if __name__ == "__main__":
     import uvicorn
     signal.signal(signal.SIGINT, handle_shutdown)
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host=os.getenv("HOST"), port=8000)

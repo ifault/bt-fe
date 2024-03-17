@@ -1,13 +1,12 @@
 import axios from 'axios';
-
+import { API_URL } from '@/lib/constant';
 const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: `http://${API_URL}`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// 添加请求拦截器
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
