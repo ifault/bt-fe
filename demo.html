@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        const API_URL = 'localhost:8000';
+        const wsUrls = [
+            `ws://${API_URL}/ws/ws1`,
+            `ws://${API_URL}/ws/ws2`,
+            `ws://${API_URL}/ws/ws3`,
+        ];
+        function createWebSocketConnection(url, index) {
+            const ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                console.log(`WebSocket ${index + 1} 已连接`);
+            };
+
+            ws.onmessage = (event) => {
+                console.log(`WebSocket ${index + 1} 收到消息:`, event.data);
+            };
+
+            ws.onerror = (error) => {
+                console.error(`WebSocket ${index + 1} 发生错误:`, error);
+            };
+
+            ws.onclose = () => {
+                console.log(`WebSocket ${index + 1} 已关闭`);
+            };
+
+            return ws;
+        }
+
+        // 创建并启动三个WebSocket连接
+        const websockets = wsUrls.map(createWebSocketConnection);
+    </script>
+</body>
+
+</html>
