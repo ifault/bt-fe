@@ -27,11 +27,8 @@ import { IDAccount } from '@/lib/utils'
 export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
   const { toast } = useToast()
   const [rowClassNames, setRowClassNames] = useState<string[]>([]);
-  const [accounts, setAccounts] = useState<string[][]>([
-    [uuidv4(),'13127778188', '520521jn', '222403198502200011', '2024-03-03'],
-    [uuidv4(),'13127778188', '520521jn', '222403198502200011', '2024-03-03'],
-  ])
-  const [type, setType] = useState<string>('一日票')
+  const [accounts, setAccounts] = useState<string[][]>([])
+  const [type, setType] = useState<string>('01')
   const [disabledButton, setDisabledButton] = useState<boolean>(false)
   const formatPastedText = (data: string) => {
     const rows = data.split('\n')
@@ -57,10 +54,10 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
     const formatedAccounts = accounts.map((account) => {
       return {
         id: uuidv4(),
-        username: account[1],
-        password: account[2],
-        idcard: account[3],
-        date: account[4],
+        username: account[0],
+        password: account[1],
+        idcard: account[2],
+        date: account[3],
       }
     })
     const data = {
@@ -98,15 +95,20 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
       </TabsList>
       <TabsContent value="account">
       <TCard title="把账户粘贴到这里">
+        
         <div className="flex space-x-2 justify-around">
           <Button onClick={clear}>清空</Button>
           <RadioGroup defaultValue={type} onValueChange={handleSelect}>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="一日票" id="oneday" />
+              <RadioGroupItem value="01" id="oneday" />
+              <Label htmlFor="option-one">登录</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="02" id="oneday" />
               <Label htmlFor="option-one">一日票</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="早享卡" id="morning" />
+              <RadioGroupItem value="03" id="morning" />
               <Label htmlFor="option-two">早享卡</Label>
             </div>
           </RadioGroup>
@@ -119,6 +121,7 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>序号</TableHead>
               <TableHead>用户名</TableHead>
               <TableHead>密码</TableHead>
               <TableHead>身份证</TableHead>
@@ -130,10 +133,11 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
               accounts.map((account: string[], index: number) => {
                 return (
                   <TableRow key={index} className={rowClassNames[index]}>
-                    <TableCell className="font-medium">{account[1]}</TableCell>
+                    <TableCell>{index+1}</TableCell>
+                    <TableCell>{account[0]}</TableCell>
+                    <TableCell>{account[1]}</TableCell>
                     <TableCell>{account[2]}</TableCell>
                     <TableCell>{account[3]}</TableCell>
-                    <TableCell>{account[4]}</TableCell>
                   </TableRow>
                 )
               })}
@@ -146,6 +150,7 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
       <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>序号</TableHead>
               <TableHead>用户名</TableHead>
               <TableHead>密码</TableHead>
               <TableHead>身份证</TableHead>
@@ -158,6 +163,7 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
               tasks.map((account: IDAccount, index: number) => {
                 return (
                   <TableRow key={index} className={getStatusClassName(account.status)}>
+                    <TableCell>{index+1}</TableCell>
                     <TableCell>{account.username}</TableCell>
                     <TableCell>{account.password}</TableCell>
                     <TableCell>{account.idcard}</TableCell>

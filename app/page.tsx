@@ -4,14 +4,12 @@ import { useToast } from '@/components/ui/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import TDevices from '@/components/t_devices'
 import TAccounts from '@/components/t_accounts'
-import TTasks from '@/components/t_tasks'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 export default function Home() {
   const { toast } = useToast()
   const [devices, setDevices] = useState([])
   const [tasks, setTasks] = useState([])
   useEffect(() => {
-    const manager = new WebSocket(`ws://localhost:8000/ws/manager`)
+    const manager = new WebSocket(`ws://192.168.3.194:8000/ws/manager`)
     let heartbeatInterval: any
     const startHearBeat = () => {
       heartbeatInterval = setInterval(() => {
@@ -56,11 +54,10 @@ export default function Home() {
     // <main className="flex min-h-screen flex-col items-center justify-between p-24">
     <div className="flex min-h-screen p-5">
       <Toaster />
-      
-      <div className="w-7/12 p-4">
+      <div className="w-7/12 p-4 sm:w-ful">
         <TAccounts tasks={tasks}></TAccounts>
       </div>
-      <div className="w-5/12 p-4">
+      <div className="w-5/12 p-4 sm:w-ful">
         <TDevices devices={devices}></TDevices>
       </div>
     </div>
