@@ -1,0 +1,18 @@
+{
+    "sourceFile": "scripts/version1.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1710661498899,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1710661498899,
+            "name": "Commit-0",
+            "content": "function closeScripts(){\r\n    var currentEngine = engines.myEngine()\r\n    var runningScripts = engines.all()\r\n    for(var i=0; i<runningScripts.length; i++){\r\n        var script = runningScripts[i]\r\n        if (script != currentEngine){\r\n            script.forceStop()\r\n        }\r\n    }\r\n}\r\nthreads.shutDownAll()\r\ncloseScripts()\r\nhome()\r\nlet heartbeatInterval\r\nlet addr = device.getMacAddress().split(\":\").join(\"\")\r\nlet globalWebsocket\r\nlet ws\r\nlet imgUrl = \"/sdcard/Pictures/img.png\";\r\nlet server_url = '192.168.3.194:8000'\r\nlet ws_url = `ws://${server_url}/ws/${addr}`\r\n\r\nconst sendCapture = (base64Str) => {\r\n    const url =`http://${server_url}/api/capture`;\r\n    const data = {\r\n        image: base64Str\r\n    };\r\n    http.postJson(url,data)\r\n}\r\nfunction init_websocket(){\r\n    ws = web.newWebSocket(ws_url, {\r\n        eventThread: 'this'\r\n    });\r\n    ws.on(\"open\", (res, ws) => {\r\n        globalWebsocket = ws\r\n    }).on(\"failure\", (err, res, ws) => {\r\n        init_websocket()\r\n    }).on(\"closing\", (code, reason, ws) => {\r\n        init_websocket()\r\n    }).on(\"binary\", (bytes, ws) => {\r\n        console.info(\"收到二进制消息:\");\r\n        console.info(\"hex: \", bytes.hex());\r\n        console.info(\"base64: \", bytes.base64());\r\n        console.info(\"md5: \", bytes.md5());\r\n        console.info(\"size: \", bytes.size());\r\n        console.info(\"bytes: \", bytes.toByteArray());\r\n    }).on(\"text\", (text, ws) => {\r\n        if(text){\r\n            var message = JSON.parse($base64.decode(text))\r\n            runScript(message.script)\r\n        }\r\n    }).on(\"closed\", (code, reason, ws) => {\r\n        log(\"WebSocket已关闭: code = %d, reason = %s\", code, reason);\r\n    });\r\n}\r\nconst startHearBeat = (socket) => {\r\n    heartbeatInterval = setInterval(() => {\r\n        socket.send('ping')\r\n    }, 1000)\r\n}\r\nconst runScript = (script) => {\r\n    threads.start(function(){\r\n        engines.execScript(\"BookTicket\", script);\r\n    })\r\n}\r\ninit_websocket()\r\nthreads.start(function(){\r\n    setInterval(() => {\r\n        if(globalWebsocket){\r\n            globalWebsocket.send(\"ping\")\r\n        }\r\n    }, 2000);\r\n})\r\nfunction monitoringOrder(){\r\n    while(!files.exists(imgUrl)){\r\n        toast(\"监控\")\r\n        sleep(5000)\r\n    }\r\n    toast(\"订阅成功\")\r\n    var img = images.read(imgUrl)\r\n    var base64Str = images.toBase64(img, format = \"png\", quality = 100)\r\n    sendCapture(base64Str)\r\n    files.remove(imgUrl)\r\n    monitoringOrder()\r\n}\r\nthreads.start(function(){\r\n    monitoringOrder()\r\n})\r\n"
+        }
+    ]
+}

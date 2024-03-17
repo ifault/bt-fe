@@ -1,0 +1,18 @@
+{
+    "sourceFile": "app/page copy.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1710668114256,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1710668114256,
+            "name": "Commit-0",
+            "content": "'use client'\r\nimport { useEffect, useState } from 'react'\r\nimport { useToast } from '@/components/ui/use-toast'\r\nimport { Toaster } from '@/components/ui/toaster'\r\nimport TDevices from '@/components/t_devices'\r\nimport TAccounts from '@/components/t_accounts'\r\nexport default function Home() {\r\n  const { toast } = useToast()\r\n  const [devices, setDevices] = useState([])\r\n  const [tasks, setTasks] = useState([])\r\n  useEffect(() => {\r\n    console.log(\"useEffect\");\r\n    \r\n    const token = localStorage.getItem('token') || \"ping\"\r\n    const manager = new WebSocket(`ws://localhost:8000/ws/manager`)\r\n    let heartbeatInterval: any\r\n    const startHearBeat = () => {\r\n      heartbeatInterval = setInterval(() => {\r\n        manager.send(\"ping\")\r\n      }, 1000)\r\n    }\r\n    const stopHearBeat = () => {\r\n      clearInterval(heartbeatInterval)\r\n    }\r\n    manager.onopen = function () {\r\n      toast({\r\n        description: '服务器已连接',\r\n      })\r\n      console.log('服务器已连接');\r\n      manager.send(token)\r\n    }\r\n    manager.onmessage = function (event) {\r\n      console.log(\"接受到消息\", event.data);\r\n      \r\n      // var message = JSON.parse(event.data)\r\n      // setDevices(message.devices)\r\n      // console.log(message.tasks);\r\n      \r\n      // setTasks(message.tasks)\r\n      \r\n    }\r\n    manager.onclose = function (event) {\r\n      console.log('服务器连接已关闭');\r\n      \r\n      // stopHearBeat()\r\n      // toast({\r\n      //   variant: 'destructive',\r\n      //   description: '服务器连接已关闭',\r\n      // })\r\n    }\r\n  }, [])\r\n\r\n  return (\r\n    // <main className=\"flex min-h-screen flex-col items-center justify-between p-24\">\r\n    <div className=\"flex min-h-screen p-5\">\r\n      <Toaster />\r\n      <div className=\"w-7/12 p-4 sm:w-ful\">\r\n        <TAccounts tasks={tasks}></TAccounts>\r\n      </div>\r\n      <div className=\"w-5/12 p-4 sm:w-ful\">\r\n        <TDevices devices={devices}></TDevices>\r\n      </div>\r\n    </div>\r\n  )\r\n}"
+        }
+    ]
+}

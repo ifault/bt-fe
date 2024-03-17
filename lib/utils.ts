@@ -33,3 +33,8 @@ export interface IDAccount {
   username: string
   category: string
 }
+
+const checkIsLoggedIn = () => {
+  const token = localStorage.getItem('token');
+  return !!token;
+};

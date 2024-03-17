@@ -3,11 +3,23 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 3,
             "patches": [
                 {
                     "date": 1710380591358,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1710661481418,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,5 @@\n+import axios from 'axios';\r\n+\r\n+export default axios.create({\r\n+  baseURL: `http://localhost:8000/`\r\n+});\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1710662226507,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,21 @@\n import axios from 'axios';\r\n \r\n-export default axios.create({\r\n-  baseURL: `http://localhost:8000/`\r\n-});\n-import axios from 'axios';\r\n+const api = axios.create({\r\n+  baseURL: 'http://localhost:8000', // 设置基本 URL\r\n+  headers: {\r\n+    'Content-Type': 'application/json',\r\n\\ No newline at end of file\n+  },\r\n+});\r\n \r\n-export default axios.create({\r\n-  baseURL: `http://localhost:8000/`\r\n-});\n+// 添加请求拦截器\r\n+api.interceptors.request.use(config => {\r\n+  const token = localStorage.getItem('token');\r\n+  if (token) {\r\n+    config.headers['Authorization'] = `Bearer ${token}`;\r\n+  }\r\n+  return config;\r\n+}, error => {\r\n+  return Promise.reject(error);\r\n+});\r\n+\r\n+export default api;\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1710662234391,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,8 @@\n import axios from 'axios';\r\n \r\n const api = axios.create({\r\n-  baseURL: 'http://localhost:8000', // 设置基本 URL\r\n+  baseURL: 'http://localhost:8000',\r\n   headers: {\r\n     'Content-Type': 'application/json',\r\n   },\r\n });\r\n"
                 }
             ],
             "date": 1710380591358,

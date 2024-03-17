@@ -1,0 +1,18 @@
+{
+    "sourceFile": "server/app.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1710661486264,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1710661486264,
+            "name": "Commit-0",
+            "content": "from datetime import datetime, timedelta\r\nfrom dotenv import load_dotenv\r\nfrom fastapi import FastAPI, Depends, HTTPException\r\nfrom fastapi.security import OAuth2PasswordBearer as OAuth\r\nfrom fastapi.middleware.cors import CORSMiddleware\r\nimport jwt\r\nimport os\r\n\r\nfrom pydantic import BaseModel\r\nload_dotenv()\r\n\r\napp = FastAPI()\r\n\r\napp.add_middleware(\r\n    CORSMiddleware,\r\n    allow_origins=[\"*\"],\r\n    allow_methods=[\"*\"],\r\n    allow_headers=[\"*\"],\r\n)\r\n\r\nSECRET_KEY = \"TEST\"\r\n\r\noauth2_scheme=OAuth(tokenUrl=\"/api/login\")\r\n\r\n\r\nclass Login(BaseModel):\r\n    token: str\r\n\r\n\r\n@app.post(\"/api/login\")\r\ndef login(login: Login):\r\n    if login.token == os.getenv(\"TOKEN\"):\r\n        expires_in = datetime.now() + timedelta(days=7)\r\n        token = jwt.encode({\"sub\": login.token, \"exp\": expires_in}, os.getenv(\"SECRET_KEY\"), algorithm=\"HS256\")\r\n        return {\"access_token\": token, \"token_type\": \"bearer\"}\r\n    else:\r\n        raise HTTPException(status_code=400, detail=\"Invalid credentials\")\r\n    \r\n@app.post(\"/api/verify\")\r\ndef verify(token: str = Depends(oauth2_scheme)):\r\n    try:\r\n       payload = jwt.decode(token, os.getenv(\"SECRET_KEY\"), algorithms=[\"HS256\"])\r\n       return {\"token\": token, \"payload\": payload}\r\n    except:\r\n        raise HTTPException(status_code=401, detail=\"Invalid token\")\r\n    \r\n\r\nif __name__ == \"__main__\":\r\n    import uvicorn\r\n    uvicorn.run(app, host=\"localhost\", port=8000)"
+        }
+    ]
+}

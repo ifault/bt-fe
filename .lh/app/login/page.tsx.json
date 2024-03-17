@@ -1,0 +1,26 @@
+{
+    "sourceFile": "app/login/page.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1710661504112,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1710661809090,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -16,9 +16,9 @@\n   }\r\n \r\n   const test = async () => {\r\n     const token = localStorage.getItem('token')\r\n-    const res = await axios.post('http://localhost:8000/api/verify', {\r\n+    const res = await axios.post('http://localhost:8000/api/verify', null, {\r\n         headers: {\r\n           'Authorization': `Bearer ${token}`\r\n         }\r\n       })\r\n"
+                },
+                {
+                    "date": 1710661975025,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,11 +21,10 @@\n         headers: {\r\n           'Authorization': `Bearer ${token}`\r\n         }\r\n     })\r\n-    if(res.status === 200) { \r\n-      console.log(\"验证成功\");\r\n-      \r\n+    if (res.status === 200) {\r\n+      console.log('验证成功')\r\n     }\r\n   }\r\n   \r\n   return (\r\n"
+                }
+            ],
+            "date": 1710661504112,
+            "name": "Commit-0",
+            "content": "\"use client\"\r\nimport react from 'react'\r\nimport { Button } from \"@/components/ui/button\"\r\nimport { Input } from \"@/components/ui/input\"\r\nimport axios from 'axios'\r\nexport default function Login() {\r\n  const [token, setToken] = react.useState('')\r\n  const submitHandler = async () => {\r\n    try {\r\n      const res = await axios.post('http://localhost:8000/api/login', {token})\r\n      const {access_token} = res.data\r\n      localStorage.setItem('token', access_token)\r\n    } catch (error) {\r\n      console.log(error)\r\n    }\r\n  }\r\n\r\n  const test = async () => {\r\n    const token = localStorage.getItem('token')\r\n    const res = await axios.post('http://192.168.3.194:8000/api/verify', {\r\n        headers: {\r\n          'Authorization': `Bearer ${token}`\r\n        }\r\n      })\r\n    console.log(res)\r\n    }\r\n  return (\r\n    <div className=\"flex justify-center pt-10\">\r\n      <div className=\"flex w-full max-w-sm items-center space-x-2\">\r\n        <Input type=\"text\" placeholder=\"密钥\" value={token} onChange={(e)=> setToken(e.target.value)}/>\r\n        <Button type=\"submit\" onClick={submitHandler}>提交</Button>\r\n      </div>\r\n      <div>\r\n      <Button type=\"submit\" onClick={test}>测试</Button>\r\n      </div>\r\n    </div>\r\n  )\r\n}\r\n"
+        }
+    ]
+}

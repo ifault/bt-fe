@@ -1,0 +1,22 @@
+{
+    "sourceFile": "components/protect.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1710664643191,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1710664827734,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -0,0 +1,20 @@\n+import { useRouter } from 'next/router';\r\n+import {checkIsLoggedIn} from '../lib/utils';\r\n+\r\n+const withAuth = (WrappedComponent) => {\r\n+  const WrapperComponent = (props) => {\r\n+    const router = useRouter();\r\n+    const isLoggedIn = checkIsLoggedIn();\r\n+\r\n+    if (!isLoggedIn) {\r\n+      router.push('/login'); // 重定向到登录页面\r\n+      return null;\r\n+    }\r\n+\r\n+    return <WrappedComponent {...props} />;\r\n+  };\r\n+\r\n+  return WrapperComponent;\r\n+};\r\n+\r\n+export default withAuth;\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1710664643191,
+            "name": "Commit-0",
+            "content": "import { Redirect } from 'react-router-dom';\r\nimport { checkIsLoggedIn } from './authUtils';\r\n\r\nconst withAuth = (Component) => {\r\n  const AuthenticatedComponent = (props) => {\r\n    const isLoggedIn = checkIsLoggedIn();\r\n\r\n    if (!isLoggedIn) {\r\n      return <Redirect to=\"/login\" />; // 重定向到登录页面\r\n    }\r\n\r\n    return <Component {...props} />;\r\n  };\r\n\r\n  return AuthenticatedComponent;\r\n};\r\n\r\nexport default withAuth;"
+        }
+    ]
+}

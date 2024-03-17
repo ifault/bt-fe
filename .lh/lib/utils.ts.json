@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1710331139136,
@@ -28,6 +28,10 @@
                 {
                     "date": 1710402023866,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -30,36 +30,6 @@\n   idcard: string\n   password: string\n   status: string\n   username: string\n+  category: string\n }\n-import { type ClassValue, clsx } from \"clsx\"\n-import { twMerge } from \"tailwind-merge\"\n-\n-export function cn(...inputs: ClassValue[]) {\n-  return twMerge(clsx(inputs))\n-}\n-\n-\n-export interface Device { \n-  device_id: string;\n-  status: string;\n-}\n-\n-export interface Task { \n-  task_id: string;\n-  taks_name: string;\n-  task_username: string;\n-  task_status: string;\n-}\n-\n-export interface Account {\n-  account_id: string;\n-  account_name: string;\n-  account_idcard: string;\n-  account_date: string;\n-}\n-\n-export interface IDAccount{\n-  id: string;\n-  status: string\n\\ No newline at end of file\n-}\n"
+                },
+                {
+                    "date": 1710664589636,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,35 +1,40 @@\n-import { type ClassValue, clsx } from 'clsx'\n-import { twMerge } from 'tailwind-merge'\n-\n-export function cn(...inputs: ClassValue[]) {\n-  return twMerge(clsx(inputs))\n-}\n-\n-export interface Device {\n-  device_id: string\n-  status: string\n-}\n-\n-export interface Task {\n-  task_id: string\n-  taks_name: string\n-  task_username: string\n-  task_status: string\n-}\n-\n-export interface Account {\n-  account_id: string\n-  account_name: string\n-  account_idcard: string\n-  account_date: string\n-}\n-\n-export interface IDAccount {\n-  date: string\n-  id: string\n-  idcard: string\n-  password: string\n-  status: string\n-  username: string\n-  category: string\n-}\n+import { type ClassValue, clsx } from 'clsx'\r\n+import { twMerge } from 'tailwind-merge'\r\n+\r\n+export function cn(...inputs: ClassValue[]) {\r\n+  return twMerge(clsx(inputs))\r\n+}\r\n+\r\n+export interface Device {\r\n+  device_id: string\r\n+  status: string\r\n+}\r\n+\r\n+export interface Task {\r\n+  task_id: string\r\n+  taks_name: string\r\n+  task_username: string\r\n+  task_status: string\r\n+}\r\n+\r\n+export interface Account {\r\n+  account_id: string\r\n+  account_name: string\r\n+  account_idcard: string\r\n+  account_date: string\r\n+}\r\n+\r\n+export interface IDAccount {\r\n+  date: string\r\n+  id: string\r\n+  idcard: string\r\n+  password: string\r\n+  status: string\r\n+  username: string\r\n+  category: string\r\n+}\r\n+\r\n+const checkIsLoggedIn = () => {\r\n+  const token = localStorage.getItem('token');\r\n+  return !!token;\r\n+};\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1710331139136,

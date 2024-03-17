@@ -9,11 +9,12 @@ export default function Home() {
   const [devices, setDevices] = useState([])
   const [tasks, setTasks] = useState([])
   useEffect(() => {
-    const manager = new WebSocket(`ws://192.168.3.194:8000/ws/manager`)
+    const token = localStorage.getItem('token') || "ping"
+    const manager = new WebSocket(`ws://localhost:8000/ws/manager`)
     let heartbeatInterval: any
     const startHearBeat = () => {
       heartbeatInterval = setInterval(() => {
-        manager.send('ping')
+        manager.send("ping")
       }, 1000)
     }
     const stopHearBeat = () => {
@@ -23,15 +24,21 @@ export default function Home() {
       toast({
         description: '服务器已连接',
       })
-      startHearBeat()
+      manager.send(token || 'ping')
     }
     manager.onmessage = function (event) {
+      if (event.data === "401") {
+        toast({
+          description: '密钥失效，请重新登录',
+        })
+        setTimeout(() => { 
+          window.location.href = '/login'
+        }, 1000)
+        return
+      }
       var message = JSON.parse(event.data)
       setDevices(message.devices)
-      console.log(message.tasks);
-      
       setTasks(message.tasks)
-      
     }
     manager.onclose = function (event) {
       stopHearBeat()
@@ -39,14 +46,6 @@ export default function Home() {
         variant: 'destructive',
         description: '服务器连接已关闭',
       })
-    }
-    return () => {
-      toast({
-        variant: 'destructive',
-        description: '服务器连接已关闭',
-      })
-      stopHearBeat()
-      manager.close()
     }
   }, [])
 

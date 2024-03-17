@@ -1,0 +1,26 @@
+{
+    "sourceFile": "app/middleware.ts",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1710665316597,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1710665328368,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n const middleware = (req, res, next) => {\r\n+    console.log('middleware');\r\n     const token = req.headers['authorization']; // 假设授权信息放在请求头的 Authorization 字段中\r\n   \r\n     if (!token || token !== 'valid_token') {\r\n       res.status(401).json({ message: 'Unauthorized' });\r\n"
+                },
+                {
+                    "date": 1710665461452,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,14 +1,6 @@\n const middleware = (req, res, next) => {\r\n     console.log('middleware');\r\n-    const token = req.headers['authorization']; // 假设授权信息放在请求头的 Authorization 字段中\r\n-  \r\n-    if (!token || token !== 'valid_token') {\r\n-      res.status(401).json({ message: 'Unauthorized' });\r\n-      return;\r\n-    }\r\n-  \r\n-    // 验证通过，继续处理请求\r\n     return next();\r\n   };\r\n   \r\n   export default middleware;\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1710665316597,
+            "name": "Commit-0",
+            "content": "const middleware = (req, res, next) => {\r\n    const token = req.headers['authorization']; // 假设授权信息放在请求头的 Authorization 字段中\r\n  \r\n    if (!token || token !== 'valid_token') {\r\n      res.status(401).json({ message: 'Unauthorized' });\r\n      return;\r\n    }\r\n  \r\n    // 验证通过，继续处理请求\r\n    return next();\r\n  };\r\n  \r\n  export default middleware;"
+        }
+    ]
+}
