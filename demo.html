@@ -15,22 +15,36 @@
             `ws://${API_URL}/ws/ws2`,
             `ws://${API_URL}/ws/ws3`,
         ];
+        let heartbeatInterval;
+        const startHeartbeat = (manager) => {
+            heartbeatInterval = setInterval(() => {
+                manager.send('ping');
+            }, 4000);
+        };
         function createWebSocketConnection(url, index) {
             const ws = new WebSocket(url);
 
             ws.onopen = () => {
+                startHeartbeat(ws)
                 console.log(`WebSocket ${index + 1} 已连接`);
             };
 
             ws.onmessage = (event) => {
                 console.log(`WebSocket ${index + 1} 收到消息:`, event.data);
+                if (event.data !== '') {
+                   setTimeout(() => {
+                       ws.send('登录成功')
+                   }, 1000);
+                }
             };
 
             ws.onerror = (error) => {
+                startHeartbeat(ws)
                 console.error(`WebSocket ${index + 1} 发生错误:`, error);
             };
 
             ws.onclose = () => {
+                startHeartbeat(ws)
                 console.log(`WebSocket ${index + 1} 已关闭`);
             };
 

@@ -34,7 +34,6 @@ export default function TAccounts({ tasks }: { tasks: IDAccount[] }) {
     const rows = data.split('\n')
     const result = rows.map((row) => {
       let columns = row.split(',')
-      // columns.unshift(uuidv4())
       return columns.map((column) => column.trim())
     })
     setAccounts([...result, ...accounts])

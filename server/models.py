@@ -45,5 +45,20 @@ class DevicesCapture(BaseModel):
     image: str
 
 
+
+class IAccount(BaseModel):
+    username: str
+    password: str
+
+
+class ITicket(BaseModel):
+    category: str
+    card: str
+    date: str
+    count: int
+    uuid: str
+
+
+
 if __name__ == '__main__':
     pass

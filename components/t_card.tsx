@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
   } from '@/components/ui/card'
-function TCard({title, children}: {title: string, children: React.ReactNode}) {
+function TCard({title, children, loading}: {title: string, children: React.ReactNode, loading: boolean}) {
   return (
     <div>
       <Card>
@@ -16,6 +16,9 @@ function TCard({title, children}: {title: string, children: React.ReactNode}) {
         <CardContent>
             {children}
         </CardContent>
+          {loading && <CardFooter className="flex justify-center">
+           加载中。。。
+          </CardFooter>}
       </Card>
     </div>
   );
