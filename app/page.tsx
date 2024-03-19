@@ -19,11 +19,6 @@ export default function Home() {
   const [accounts, setAccounts] = useState([])
   const [tickets, setTickets] = useState([])
   useEffect(() => {
-    API.get('/api/info').then((res) => {
-      setAccounts(res.data['accounts'])
-      setTickets(res.data['tickets'])
-      console.log(res.data)
-    })
     const manager = createSocket()
      manager.onmessage = function (event) {
       if (event.data === '401') {
@@ -40,20 +35,27 @@ export default function Home() {
     };
   }, [])
 
+  const handleInfo = () => {
+    API.get('/api/info').then((res) => {
+      setAccounts(res.data['accounts'])
+      setTickets(res.data['tickets'])
+    })
+  }
+
   return (
     <div className="flex min-h-screen p-5 justify-center">
       <Toaster />
-      <Tabs defaultValue="devices" className="w-full">
+      <Tabs defaultValue="tickets" className="w-full">
         <TabsList className="grid w-2/3 grid-cols-3">
-          <TabsTrigger value="accounts">账号</TabsTrigger>
-          <TabsTrigger value="tickets">订票</TabsTrigger>
+          <TabsTrigger value="accounts" onClick={handleInfo}>账号</TabsTrigger>
+          <TabsTrigger value="tickets" onClick={handleInfo}>订票</TabsTrigger>
           <TabsTrigger value="devices">设备</TabsTrigger>
         </TabsList>
         <TabsContent value="accounts">
           <Accounts data={accounts}></Accounts>
         </TabsContent>
         <TabsContent value="tickets">
-          <Tickets data={tickets}></Tickets>
+          <Tickets defaultData={tickets}></Tickets>
         </TabsContent>
         <TabsContent value="devices" >
           <Devices data={devices}></Devices>

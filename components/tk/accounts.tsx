@@ -36,20 +36,20 @@ export default function Accounts({data}: { data: IAccount[] }) {
         })
     }
     useEffect(() => {
-        setAccounts(data)
+        setAccounts(data || accounts)
         if (data.length > 0) setLoading(false)
     }, [data])
     const handleClear = () => {
-            setAccounts([])
-            API.post('/api/accounts', []).then((res) => {
-                toast({
-                    description: '数据保存成功',
-                })
-                setLoading(false)
-            }).catch((err) => {
-                console.log(err)
+        setAccounts([])
+        API.post('/api/accounts', []).then((res) => {
+            toast({
+                description: '数据保存成功',
             })
-        }
+            setLoading(false)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
     return (
         <TCard title="账号" loading={loading}>
             <Toaster/>

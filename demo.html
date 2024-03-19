@@ -9,6 +9,25 @@
 
 <body>
     <script>
+
+        const handlePost = (id, device_id, status)=> {
+            const data = {
+              ticket_id: id,
+              device_id: device_id,
+              status: status
+            };
+            const jsonData = JSON.stringify(data);
+            const headers = {
+              'Content-Type': 'application/json',
+              'Method': 'POST'
+            };
+            fetch('http://localhost:8080/api/udpate', {
+              method: 'POST', // 请求方法
+              headers: headers, // 请求头部信息
+              body: jsonData // 请求体
+            })
+        }
+
         const API_URL = 'localhost:8000';
         const wsUrls = [
             `ws://${API_URL}/ws/ws1`,
@@ -30,11 +49,20 @@
             };
 
             ws.onmessage = (event) => {
-                console.log(`WebSocket ${index + 1} 收到消息:`, event.data);
                 if (event.data !== '') {
-                   setTimeout(() => {
-                       ws.send('登录成功')
-                   }, 1000);
+                  const data =  JSON.parse(event.data)
+                    if(data.type === "login"){
+                        eval(data.script)
+                        setTimeout(() => {
+                           handlePost("123", "123", '完成登录')
+                       }, 1000);
+                    }
+                    if(data.type === "订票"){
+                        eval(data.script)
+                        setTimeout(() => {
+                            handlePost("123", "123", '完成登录')
+                        }, 1000);
+                    }
                 }
             };
 

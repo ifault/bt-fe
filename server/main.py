@@ -25,20 +25,15 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
             token = await websocket.receive_text()
             jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
         while True:
-            message = await websocket.receive_text()
+            await websocket.receive_text()
             if device_id == "manager":
-                print(1)
                 response = await get_all_devices(True)
-                print(2)
                 response = json.dumps(response)
-                print(3)
                 await websocket.send_text(response)
             else:
                 await register_device(device_id)
                 await handle_devices(websocket, device_id)
-            if message == "登录成功":
-                print("登录成功")
-                await update_device_status(device_id, "登录成功")
+
     except InvalidTokenError:
         print("Invalid token")
         await websocket.send_text("401")

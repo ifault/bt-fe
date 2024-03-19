@@ -6,8 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, FastAPI
 from fastapi.security import OAuth2PasswordBearer as OAuth
 import os
 import jwt
+from tortoise.contrib.pydantic import pydantic_model_creator
 
-from models import DeviceFreezeRequest, Login, TaskRequest, IAccount, ITicket
+from models import Login, IAccount, ITicket, IUpdate, IDeleteTicket, Tickets
+from server.utils.service import get_all_devices
 from utils.redis_client import get_db, get_device, get_pool
 router = APIRouter()
 oauth2_scheme = OAuth(tokenUrl="/api/login")
@@ -33,23 +35,27 @@ def login(form: Login):
 
 
 @router.post("/prepare")
-async def start(db=Depends(get_db), pool=Depends(get_pool)):
-    service = await Service().init()
+async def start():
+    db = await get_db()
+    pool = await get_pool()
     accounts = await db.lrange("db:accounts", 0, -1)
     for account in accounts:
         await pool.lpush(f"queue:account", account)
-    devices = await service.get_all_devices(False)
+    devices = await get_all_devices(False)
     for device in devices:
         await pool.lpush(f"queue:device:{device['device_id']}", device['device_id'])
     return {"success": "任务创建成功"}
 
 
 @router.post("/book")
-async def book(device=Depends(get_device), pool=Depends(get_pool), db=Depends(get_db)):
+async def book():
+    device = await get_device()
+    pool = await get_pool()
+    db = await get_db()
     tickets = await db.lrange("db:tickets", 0, -1)
     keys = await device.keys('*')
-    filtered_keys = [key for key in keys if await device.get(key) == "登录成功"]
-    for key in filtered_keys:
+    for key in keys:
+        print(f"queue:book:{key}")
         await pool.lpush(f"queue:book:{key}", key)
     for ticket in tickets:
         await pool.lpush(f"queue:ticket", ticket)
@@ -57,13 +63,20 @@ async def book(device=Depends(get_device), pool=Depends(get_pool), db=Depends(ge
 
 
 @router.post("/reset")
-async def reset(device=Depends(get_device), pool=Depends(get_pool)):
-    await device.flushall()
-    await pool.flushall()
+async def reset():
+    device = await get_device()
+    pool = await get_pool()
+    device_keys = await device.keys('*')
+    pool_keys = await pool.keys('*')
+    if device_keys:
+        await device.delete(*device_keys)
+    if pool_keys:
+        await pool.delete(*pool_keys)
 
 
 @router.post("/accounts")
-async def store_accounts(accounts: List[IAccount], db=Depends(get_db)):
+async def store_accounts(accounts: List[IAccount]):
+    db = await get_db()
     if len(accounts) > 0:
         if await db.exists("db:accounts"):
             await db.delete("db:accounts")
@@ -93,13 +106,33 @@ async def get_info(db=Depends(get_db)):
     return {"accounts": accounts, "tickets": tickets}
 
 
-@router.post("/tickets")
-async def store_tickets(tickets: List[ITicket], db=Depends(get_db)):
-    if len(tickets) > 0:
-        if await db.exists("db:tickets"):
-            await db.delete("db:tickets")
-        serialized_tickets = [ticket.dict() for ticket in tickets]
-        await db.lpush("db:tickets", *[json.dumps(ticket) for ticket in serialized_tickets])
-        print("tickets stored")
+@router.post("/update")
+async def update(data: IUpdate):
+    db = await get_db()
+    device = await get_device()
+    if data.ticket_id == "0":
+        await device.set(data.device_id, data.status)
     else:
-        await db.delete("db:tickets")
+        pass
+
+
+@router.post("/tickets")
+async def store_tickets(tickets: List[ITicket]):
+    creator = pydantic_model_creator(Tickets)
+    objs = [creator(**ticket.model_dump()) for ticket in tickets]
+    await Tickets.bulk_create(objs)
+
+
+@router.post("/tickets/delete")
+async def store_tickets(ticket: IDeleteTicket):
+    db = await get_db()
+    list_key = 'db:tickets'
+    filtered_data = []
+    if await db.exists(list_key):
+        all_elements = await db.lrange(list_key, 0, -1)
+        for element in all_elements:
+            data = json.loads(element)
+            if data.get('uuid') != ticket.uuid:
+                filtered_data.append(json.dumps(data))
+        await db.delete(list_key)
+        await db.rpush(list_key, *filtered_data)

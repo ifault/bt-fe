@@ -31,6 +31,7 @@ export interface IAccount {
 }
 export interface ITicket{
   category: string
+  zhifubao: string
   card: string
   date: string
   count: number
