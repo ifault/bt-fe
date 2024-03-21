@@ -11,15 +11,18 @@ ALGORITHM = "HS256"
 # 定义 API 路由
 router = APIRouter()
 
+
 class IAccount(BaseModel):
     username: str
     password: str
+
 
 async def redis_db():
     # 假设这里是你的 redis_db 实现
     redis_uri = "redis://localhost"
     redis = await aioredis.create_redis_pool(redis_uri)
     return redis
+
 
 # JWT Token 验证函数
 async def verify_token(token: str = Depends(HTTPBearer())) -> str:
@@ -28,6 +31,7 @@ async def verify_token(token: str = Depends(HTTPBearer())) -> str:
         return payload["sub"]
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+
 
 @router.post("/accounts")
 async def store_accounts(accounts: List[IAccount], db=Depends(redis_db), token: str = Depends(verify_token)):

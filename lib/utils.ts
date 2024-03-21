@@ -26,6 +26,7 @@ export interface Account {
 }
 
 export interface IAccount {
+  uuid: string
   password: string
   username: string
 }
@@ -41,6 +42,15 @@ export interface IDevice{
     device_id: string
     status: string
 }
+
+export interface ITask{
+  device: string
+  category: string
+  content: string
+  status: string
+  created_at: string
+}
+
 
 
 export const handleClipboardData = (event, col) => {

@@ -3,7 +3,7 @@ import {v4 as uuidv4} from 'uuid';
 import * as React from "react"
 import {
     CaretSortIcon,
-    DotsHorizontalIcon,
+    DotsHorizontalIcon, ReloadIcon,
 } from "@radix-ui/react-icons"
 import {
     ColumnDef,
@@ -40,6 +40,8 @@ import {
 import {useEffect, useState} from "react";
 import {handleClipboardData} from "@/lib/utils";
 import API from "@/lib/api";
+import {BeatLoader} from "react-spinners";
+import TCard from "@/components/t_card";
 
 export type ITicket = {
     uuid: string,
@@ -177,12 +179,13 @@ export const columns: ColumnDef<ITicket>[] = [
     },
 ]
 
-export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
+export default function Tickets({count}) {
     const {toast} = useToast()
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
     )
+    let [loading, setLoading] = useState(false);
     const [pagination, setPagination] = React.useState<PaginationState>({
         pageIndex: 0,
         pageSize: 200,
@@ -191,11 +194,21 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
+    const [data, setData] = useState(() => []);
     useEffect(() => {
-        console.log(table.getSelectedRowModel().flatRows)
-    }, [rowSelection])
-    const [data, setData] = useState(() => [...defaultData]);
+        setLoading(true)
+        API.get('/api/tickets',{}).then((res) => {
+            setData(res.data)
+            count(res.data.length)
+            setLoading(false)
+        }).catch((err) => {
+            console.log(err)
+            setLoading(false)
+        })
+    }, [])
+
     const handlePaste = (e) => {
+        setLoading(true)
         const result = handleClipboardData(e, 5).map((account: ITicket) => {
             return {
                 category: account[0],
@@ -208,13 +221,28 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
         })
 
         const formated = [...data, ...result]
-        API.post('/api/tickets', formated).then((res) => {
+        API.post('/api/tickets', result).then((res) => {
             setData(formated)
             toast({
                 description: '数据保存成功',
             })
+            count(formated.length)
+            setLoading(false)
+        }).catch((err) => {
+            setLoading(false)
+            console.log(err)
+        })
+    }
+    const updateRow = (data) => {
+        setLoading(true)
+        API.put('/api/tickets', data).then((res) => {
+            setLoading(false)
+            toast({
+                description: '数据更新成功',
+            })
         }).catch((err) => {
             console.log(err)
+            setLoading(false)
         })
     }
     const table = useReactTable({
@@ -240,18 +268,17 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
             setEditedRows,
             removeRow: (rowIndex: number, uuid: string) => {
                 const setFilterFunc = (old: ITicket[]) =>
-                  old.filter((_row: ITicket, index: number) => index !== rowIndex);
+                    old.filter((_row: ITicket, index: number) => index !== rowIndex);
                 setData(setFilterFunc);
-                API.post('/api/tickets/delete', {uuid: uuid }).then((res) => {
+                API.delete('/api/tickets', {data: {uuid: uuid}}).then((res) => {
                     toast({
                         description: '数据删除成功',
                     })
                 }).catch((err) => {
                     console.log(err)
                 })
-              },
+            },
             updateData: (rowIndex: number, columnId: string, value: string) => {
-                console.log(value)
                 setData((old) =>
                     old.map((row, index) => {
                         if (index === rowIndex) {
@@ -259,7 +286,10 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
                                 ...old[rowIndex],
                                 [columnId]: value,
                             }
-                            console.log(res)
+
+                            if(old[rowIndex][columnId] != value){
+                                updateRow(res)
+                            }
                             return res;
                         }
                         return row;
@@ -268,11 +298,36 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
             },
         }
     })
-
+    const handleBook = () => {
+        setLoading(true)
+        const selected = table.getSelectedRowModel().flatRows.map((row) => {
+            return row.original
+        })
+        if (selected.length > 0) {
+            API.post('/api/book', selected).then((res) => {
+                toast({
+                    description: '开始创建任务',
+                })
+                setLoading(false)
+            }).catch((err) => {
+                toast({
+                    variant: "destructive",
+                    description: '任务创建失败',
+                })
+                setLoading(false)
+            })
+        }
+    }
     return (
+
+        <TCard title="已连接的设备" loading={loading} onPaste={handlePaste}>
         <div className="w-full" onPaste={handlePaste}>
             <Toaster/>
             <div className="flex items-center py-4 justify-between">
+                <Button onClick={handleBook} variant="destructive" disabled={loading} className="mr-5">
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                    开始
+                </Button>
                 <Input
                     placeholder="过滤身份证..."
                     value={(table.getColumn("card")?.getFilterValue() as string) ?? ""}
@@ -285,6 +340,8 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
                     {table.getFilteredSelectedRowModel().rows.length} of{" "}
                     {table.getFilteredRowModel().rows.length} 个 被选择.
                 </div>
+
+
             </div>
             <div className="rounded-md border">
                 <Table>
@@ -336,11 +393,7 @@ export default function Tickets({defaultData}: { defaultData: ITicket[]}) {
                     </TableBody>
                 </Table>
             </div>
-
-
-
-
-
         </div>
+        </TCard>
     )
 }

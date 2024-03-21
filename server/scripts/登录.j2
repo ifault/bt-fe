@@ -1,0 +1,51 @@
+const sendComplete = () => {
+    const url =`{{server_url}}/api/task`;
+    const options = {
+        method: "PUT"
+    }
+    const data = {
+        uuid: "{{uuid}}",
+        device_id: "{{device_id}}"
+    };
+    http.postJson(url, data, options)
+}
+threads.shutDownAll()
+app.launchApp("迪士尼度假区")
+while (!click("我的"));
+while (!text("收件箱").exists());
+sleep(500)
+click(450, 480)
+sleep(500)
+threads.start(function(){
+    while(!text("短信验证码登录").exists());
+    text("账户密码登录").findOne().click()
+    sleep(1000)
+    input(0, "{{username}}")
+    sleep(1000)
+    input(1, "{{password}}")
+    var terms = textContains("我已阅读").findOne().bounds()
+    click(terms.left - 20, terms.top)
+    sleep(1000)
+    log("点击登录")
+    while(!click("登录"));
+    sleep(500)
+    sendComplete();
+    sleep(2000)
+    threads.shutDownAll()
+})
+threads.start(function(){
+    while(!text("以后再说").findOne());
+    text("以后再说").findOne().click()
+})
+threads.start(function(){
+    while(!text("编辑个人信息").exists());
+        if (text("退出").exists()) {
+        text("退出").findOne().click()
+    }
+})
+
+threads.start(function(){
+    while(!click("确认"));
+    sleep(2000)
+    click(450, 480)
+})

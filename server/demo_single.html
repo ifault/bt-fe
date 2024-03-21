@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+<script>
+    const API_URL = 'localhost:8000';
+    const wsUrls = [
+        `ws://${API_URL}/ws/ws1`,
+    ];
+    const handlePost = (id, device) => {
+        const url = `http://${API_URL}/api/task`; // 替换为实际的 API URL
+        const requestOptions = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                "uuid": id,
+                "device_id": device
+            }), // 根据需要传递请求体数据
+        };
+        fetch(url, requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    }
+
+
+    function createWebSocketConnection(url, index) {
+        const ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            console.log(`WebSocket ${index + 1} 已连接`);
+            ws.send("ping")
+        };
+
+        ws.onmessage = (event) => {
+            const msg = event.data
+            if (msg === "pong") {
+                ws.send("ping")
+            } else {
+                try {
+                    const message = JSON.parse(event.data);
+                    setTimeout(() => {
+                        handlePost(message['uuid'], message['device']);
+                    }, 1000 * 10);
+                    ws.send("ping")
+                } catch (error) {
+                    ws.send("ping")
+                }
+            }
+
+
+        };
+
+        ws.onerror = (error) => {
+            console.error(`WebSocket ${index + 1} 发生错误:`, error);
+        };
+
+        ws.onclose = () => {
+            console.log(`WebSocket ${index + 1} 已关闭`);
+            ws.send("close")
+        };
+
+        return ws;
+    }
+
+    // 创建并启动三个WebSocket连接
+    const websockets = wsUrls.map(createWebSocketConnection);
+</script>
+</body>
+
+</html>

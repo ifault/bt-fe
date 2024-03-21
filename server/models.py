@@ -1,33 +1,12 @@
-from pydantic import BaseModel
+from datetime import datetime
 from tortoise import fields
 from tortoise.models import Model
 
 
-class Login(BaseModel):
-    token: str
-
-class AccountRequest(BaseModel):
-    id: str
-    username: str
-    password: str
-    idcard: str
-    date: str
-    status: str = "0"
-    category: str = ""
-
-
-class IAccount(BaseModel):
-    username: str
-    password: str
-
-
-class ITicket(BaseModel):
-    category: str
-    zhifubao: str = ""
-    card: str
-    date: str
-    count: int
-    uuid: str
+class Accounts(Model):
+    uuid = fields.CharField(max_length=36, index=True)
+    username = fields.CharField(max_length=255, unique=True, index=True)
+    password = fields.CharField(max_length=255)
 
 
 class Tickets(Model):
@@ -39,18 +18,25 @@ class Tickets(Model):
     date = fields.CharField(max_length=255)
     count = fields.IntField()
 
-    class Meta:
-        table = "tickets"
 
-class IDeleteTicket(BaseModel):
-    uuid: str
+class Tasks(Model):
+    id = fields.IntField(pk=True)
+    device = fields.CharField(max_length=255, index=True, null=True)
+    uuid = fields.CharField(max_length=36, index=True)
+    category = fields.CharField(max_length=255)
+    content = fields.TextField()
+    status = fields.CharField(max_length=255, null=True, default="等待可用设备")
+    created_at = fields.DatetimeField(default=datetime.now)
+    soft_deleted = fields.BooleanField(default=False)
 
 
-class IUpdate(BaseModel):
-    ticket_id: str = ""
-    device_id: str = ""
-    status: str = ""
-
-
-if __name__ == '__main__':
-    pass
+class TicketHistory(Model):
+    id = fields.IntField(pk=True)
+    uuid = fields.CharField(max_length=36, index=True)
+    category = fields.CharField(max_length=255)
+    zhifubao = fields.CharField(max_length=255)
+    card = fields.CharField(max_length=255)
+    date = fields.CharField(max_length=255)
+    count = fields.IntField()
+    status = fields.CharField(max_length=255, null=True, default="")
+    created_at = fields.DatetimeField(default=datetime.now)

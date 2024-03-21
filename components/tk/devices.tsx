@@ -11,42 +11,48 @@ import {IDevice} from "@/lib/utils";
 import {Button} from "@/components/ui/button"
 import API from "@/lib/api";
 import {useEffect, useState} from "react";
+import * as React from "react";
+import {BeatLoader} from "react-spinners";
+import {ReloadIcon} from "@radix-ui/react-icons";
 
-export default function Devices({data}: { data: IDevice[] }) {
-    const [devices, setDevices] = useState<IDevice[]>(data)
-    const handlePrepare = () => {
-        API.post('/api/prepare').then((res) => {
-            console.log(res)
-        })
-    }
-
-    const handleReset = () => {
-        API.post('/api/reset').then((res) => {
-            setDevices([])
+export default function Devices({count}) {
+    const [devices, setDevices] = useState<IDevice[]>([])
+    const [loading, setLoading] = useState(true)
+    const refresh = () => {
+        setLoading(true)
+        API.get('/api/devices').then((res) => {
+            setDevices(res.data)
+            count(res.data.length)
+            setLoading(false)
+        }).catch((err) => {
+            console.log(err)
+            setLoading(false)
         })
     }
     useEffect(() => {
-        setDevices(data || devices)
-    }, [data])
+        refresh()
+    }, [])
+    const handleRefresh = () => {
+        refresh()
+    }
+    const handleReset = () => {
+        API.delete('/api/devices').then((res) => {
+            setDevices([])
+            count(0)
+        })
+    }
     return (
-        <TCard title="设备">
-            <blockquote className="mt-6 border-l-2 pl-6 italic">
-             如果所有模拟器均已登录账户就不需要点击 "登录账户" 按钮，
-                脚本会用已登录账户进行抢票,确保连接的模拟器均已登录账户
-            </blockquote>
-            <br/>
-            <div className="flex">
-                <Button onClick={handlePrepare}>登录账户</Button>
-                <div style={{ marginLeft: '10px' }}></div>
-                <Button onClick={handleReset}>重置</Button>
-            </div>
-
+        <TCard title="已连接的设备" loading={loading}>
+            <Button onClick={handleRefresh} variant="destructive" disabled={loading} className="mr-5">
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                刷新
+            </Button>
+            <Button onClick={handleReset}>重置</Button>
             <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>序号</TableHead>
                         <TableHead>设备ID</TableHead>
-                        <TableHead>设备状态</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -56,7 +62,6 @@ export default function Devices({data}: { data: IDevice[] }) {
                                 <TableRow key={index}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{account.device_id}</TableCell>
-                                    <TableCell>{account.status}</TableCell>
                                 </TableRow>
                             )
                         })}
