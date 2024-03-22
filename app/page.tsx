@@ -18,16 +18,19 @@ import 'react-toastify/dist/ReactToastify.css';
 import useSound from 'use-sound';
 import sound from '/public/sound.mp3';
 import {Button} from "@/components/ui/button";
+import {Switch} from "@/components/ui/switch";
+import {Label} from "@/components/ui/label";
+import API from "@/lib/api";
 
 export default function Home() {
     const [accountCount, setAccountCount] = useState(0)
     const [deviceCount, setDeviceCount] = useState(0)
     const [ticketCount, setTicketCount] = useState(0)
     const [taskCount, setTaskCount] = useState(0)
-    const buttonRef = useRef(null);
+    const socket = useRef<WebSocket | null>(null);
+    const [enabled, setEnabled] = useState(true)
     const [play] = useSound(sound, {volume: 2, soundEnabled: true});
-
-    useEffect(() => {
+    const handleWebSocket = () => {
         const manager = createSocket()
         manager.onmessage = function (event) {
             toast.success(event.data)
@@ -35,22 +38,32 @@ export default function Home() {
         manager.onopen = function () {
             manager.send('ping');
             toast.success('连接成功')
-
         };
-        manager.onclose = function () {
-            toast.error('断开连接')
+        socket.current = manager
+    }
+    const handleWebSocketOpen = () => {
+        if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+            toast.success('连接成功')
+        } else {
+            handleWebSocket()
         }
-
-    }, [])
-
-
+    }
+    const handleWebSocketClose = () => {
+        if (socket.current) {
+            socket.current.close()
+            socket.current = null
+            toast.error('服务断开连接')
+        }
+    }
+    const handleSocket = () => {
+        API.put('/api/devices', {}).then((res) => {
+            const enabled = res.data['enabled']
+            setEnabled(enabled)
+            enabled ? handleWebSocketOpen() : handleWebSocketClose()
+        })
+    }
     return (
-        <div className="flex min-h-screen p-5 justify-center">
-            {/*<Button onClick={play} id="test">*/}
-            {/*  <span role="img" aria-label="trumpet">*/}
-            {/*    🎺*/}
-            {/*  </span>*/}
-            {/*</Button>*/}
+        <div className="min-h-screen p-5 justify-center">
             <ToastContainer
                 position="top-right"
                 autoClose={2000}
@@ -63,7 +76,12 @@ export default function Home() {
                 theme="light"
                 transition={Slide}
             />
-            {/* Same as */}
+            <div className="flex items-center space-x-2">
+                <Switch id="airplane-mode" checked={enabled} className="ml-2"
+                        onCheckedChange={handleSocket}/>
+                <Label htmlFor="airplane-mode">{enabled ? '接收设备' : '停止接收'}</Label>
+            </div>
+            <br/>
             <Tabs defaultValue="accounts" className="w-full">
                 <TabsList className="grid w-2/3 grid-cols-4">
                     <TabsTrigger value="accounts">账号<Badge className="ml-5"
@@ -80,7 +98,7 @@ export default function Home() {
                     <Tickets count={setTicketCount}></Tickets>
                 </TabsContent>
                 <TabsContent value="devices">
-                    <Devices count={setDeviceCount}></Devices>
+                    <Devices count={setDeviceCount} open={handleWebSocketOpen} close={handleWebSocketClose}></Devices>
                 </TabsContent>
                 <TabsContent value="tasks">
                     <Tasks count={setTaskCount}></Tasks>

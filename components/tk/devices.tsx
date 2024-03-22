@@ -12,17 +12,22 @@ import {Button} from "@/components/ui/button"
 import API from "@/lib/api";
 import {useEffect, useState} from "react";
 import * as React from "react";
-import {BeatLoader} from "react-spinners";
+import {Switch} from "@/components/ui/switch"
 import {ReloadIcon} from "@radix-ui/react-icons";
+import createSocket from "@/lib/socket";
+import {toast} from "react-toastify";
+import {Label} from "@/components/ui/label";
 
 export default function Devices({count}) {
     const [devices, setDevices] = useState<IDevice[]>([])
     const [loading, setLoading] = useState(true)
+
     const refresh = () => {
         setLoading(true)
         API.get('/api/devices').then((res) => {
-            setDevices(res.data)
-            count(res.data.length)
+            const data = res.data
+            setDevices(data['devices'])
+            count(data['devices'].length)
             setLoading(false)
         }).catch((err) => {
             console.log(err)
@@ -43,11 +48,14 @@ export default function Devices({count}) {
     }
     return (
         <TCard title="已连接的设备" loading={loading}>
-            <Button onClick={handleRefresh} variant="destructive" disabled={loading} className="mr-5">
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
-                刷新
-            </Button>
-            <Button onClick={handleReset}>重置</Button>
+            <div className="flex items-center ">
+                <Button onClick={handleRefresh} variant="destructive" disabled={loading} className="mr-5">
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                    刷新
+                </Button>
+                <Button onClick={handleReset}>重置</Button>
+            </div>
+
             <Table>
                 <TableHeader>
                     <TableRow>

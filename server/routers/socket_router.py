@@ -1,19 +1,22 @@
-import json
 import asyncio
 from fastapi import APIRouter
 from fastapi import WebSocket
 from starlette.websockets import WebSocketDisconnect
 
-from models import Tasks
 from shared import connections
-from utils.device_manager import add_device_to_avalible_list, get_pool, get_manager_pool
+from utils.device_manager import add_device_to_avalible_list, get_manager_pool
 
 socket_router = APIRouter()
 heartbeat_interval = 10
+socket_enabled = False
 
 
 @socket_router.websocket("/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
+    if not socket_enabled:
+        print("websocket is not enabled")
+        await websocket.close(reason="websocket is not enabled")
+        return
     await websocket.accept()
     connections[device_id] = websocket
     await add_device_to_avalible_list(device_id, f"设备({device_id})已连接")
@@ -36,6 +39,10 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
 
 @socket_router.websocket("/admin/manager")
 async def websocket_endpoint(websocket: WebSocket):
+    if not socket_enabled:
+        print("websocket is not enabled")
+        await websocket.close(reason="websocket is not enabled")
+        return
     await websocket.accept()
     redis = await get_manager_pool()
     try:
@@ -45,3 +52,12 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"manager发生了错误 {e}")
 
+
+def toggle_socket():
+    global socket_enabled
+    socket_enabled = not socket_enabled
+    return socket_enabled
+
+
+def get_socketd_status():
+    return socket_enabled
