@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,Request
 
 from routers.socket_router import toggle_socket, get_socketd_status
 from shared import connections
@@ -21,8 +21,8 @@ async def enable_websocket():
 
 
 @device_router.delete("/devices")
-async def reset_devices():
-    await clean()
+async def reset_devices(request: Request):
+    await clean(request.app.state.redis)
     for device in connections.keys():
         await add_device_to_avalible_list(device, f"设备{device}已重新连接")
     return {"success": "ok"}

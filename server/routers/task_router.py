@@ -1,20 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Request
 
 from models import Tasks
 from pydantic_models import ITask
-from utils.device_manager import add_device_to_avalible_list, get_pool
+from utils.device_manager import add_device_to_avalible_list
 from utils.service import task_to_dict
 
 task_router = APIRouter()
 
 
 @task_router.put("/task")
-async def update_task(task: ITask):
+async def update_task(task: ITask, request: Request):
     item = await Tasks.filter(uuid=task.uuid).first()
     await Tasks.filter(uuid=task.uuid).update(status="完成任务")
-    # item.status = "完成任务"
-    # await item.save()
-    await add_device_to_avalible_list(task.device_id, item.content)
+    await add_device_to_avalible_list(request.app.state.redis, task.device_id, item.content)
     return {"success": "ok"}
 
 

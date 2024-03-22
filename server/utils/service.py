@@ -3,7 +3,9 @@ import json
 import os
 import zlib
 from datetime import datetime
-
+from time import sleep
+import asyncio
+import aioredis
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 
@@ -52,12 +54,16 @@ def account_to_content(account):
 
 
 async def subscribe_tasks(redis):
-    pubsub = redis.pubsub()
-    await pubsub.psubscribe("tasks")
-    while True:
-        message = await pubsub.get_message(ignore_subscribe_messages=True)
-        if message:
-            await handle_tasks(redis, message['data'])
+    try:
+        while True:
+            _, queue = await redis.blpop('task_queue')
+            if queue:
+                await handle_tasks(redis, json.loads(queue))
+            await asyncio.sleep(1)
+    except aioredis.exceptions.RedisError as e:
+        print(f"Redis Error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 def switch_case(argument, arg):
@@ -102,16 +108,16 @@ async def handle_ticket_02(data):
 
 
 async def handle_tasks(redis, message):
-    msg_json = json.loads(message)
     device = await redis.spop('device_queue')
-    task = {}
-    msg_json['device'] = device
-    uuid = msg_json['uuid']
-    print(f"GO here {msg_json['category']}")
-    await Tasks.filter(uuid=uuid).update(status="正在执行脚本", device=device)
-    task['script'] = await switch_case(msg_json['category'], msg_json)
-    result = json.dumps(task)
-    print(result.encode().decode('unicode_escape'))
-    result = base64.b64encode(result.encode("utf-8")).decode("utf-8")
-    result = zlib.compress(result.encode(), level=9)
-    await connections[device].send_text(result)
+    if device:
+        task = {}
+        message['device'] = device
+        uuid = message['uuid']
+        print(f"GO here {message['category']}")
+        await Tasks.filter(uuid=uuid).update(status="正在执行脚本", device=device)
+        task['script'] = await switch_case(message['category'], message)
+        result = json.dumps(task)
+        print(result.encode().decode('unicode_escape'))
+        result = base64.b64encode(result.encode("utf-8")).decode("utf-8")
+        result = zlib.compress(result.encode(), level=9)
+        await connections[device].send_text(result)

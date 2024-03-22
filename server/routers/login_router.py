@@ -1,15 +1,12 @@
-import json
 from datetime import datetime, timedelta
-from typing import List
-from aioredis import Redis
+import os
+from datetime import datetime, timedelta
+
+import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer as OAuth
-import os
-import jwt
-from models import TicketHistory, Tasks
-from pydantic_models import ITicket, Login, IAccount
-from utils.device_manager import get_pool
-from utils.service import ticket_to_content, task_to_dict, account_to_content
+
+from pydantic_models import Login
 
 login_router = APIRouter()
 oauth2_scheme = OAuth(tokenUrl="/api/login")

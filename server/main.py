@@ -3,7 +3,7 @@ import json
 import os
 from contextlib import asynccontextmanager
 from typing import List
-
+import aioredis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise import Tortoise
@@ -17,26 +17,32 @@ from routers.socket_router import socket_router
 from routers.task_router import task_router
 from routers.ticket_router import ticket_router
 from settings import TORTOISE_ORM
-from utils.device_manager import get_pool, get_manager_pool
 from utils.service import subscribe_tasks
 from utils.service import ticket_to_content, account_to_content
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(fapp: FastAPI):
+    pool = aioredis.ConnectionPool.from_url(
+        "redis://localhost", max_connections=500, decode_responses=True
+    )
+    redis = aioredis.Redis(connection_pool=pool)
+    pub = redis.pubsub()
+    fapp.state.redis = redis
     await Tortoise.init(config=TORTOISE_ORM)
     await Tortoise.generate_schemas()
-    redis = await get_pool()
-    redis_notify = await get_manager_pool()
-    app.state.redis = redis
-    app.state.redis_notify = redis_notify
-    asyncio.create_task(subscribe_tasks(redis))
+    subtask = asyncio.create_task(subscribe_tasks(fapp.state.redis))
     yield
+    subtask.cancel()
+    try:
+        await subtask
+    except asyncio.CancelledError:
+        print("Task was cancelled.")
+    await redis.close()
+    await pool.disconnect()
+
     await Tortoise.close_connections()
-    await app.state.redis.delete('device_queue')
-    await app.state.redis_notify.delete('notify_queue')
-    await app.state.redis.close()
-    await app.state.redis_notify.close()
+
 
 
 app = FastAPI(lifespan=lifespan)
@@ -61,7 +67,7 @@ async def prepare(accounts: List[IAccount]):
         await Tasks.create(category=account.category,
                            uuid=account.uuid,
                            content=account_to_content(account))
-        await app.state.redis.publish("tasks", json.dumps(account.dict()))
+        await app.state.redis.rpush("task_queue", json.dumps(account.dict()))
     return {"success": "任务创建成功"}
 
 
@@ -71,7 +77,7 @@ async def start_tasks(tickets: List[ITicket]):
         await Tasks.create(category=ticket.category,
                            uuid=ticket.uuid,
                            content=ticket_to_content(ticket))
-        await app.state.redis.publish("tasks", json.dumps(ticket.dict()))
+        await app.state.redis.rpush("task_queue", json.dumps(ticket.dict()))
     ticket_objects = [
         TicketHistory(uuid=ticket.uuid,
                       category=ticket.category,

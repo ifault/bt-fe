@@ -1,14 +1,14 @@
 import asyncio
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi import WebSocket
 from starlette.websockets import WebSocketDisconnect
 
 from shared import connections
-from utils.device_manager import add_device_to_avalible_list, get_manager_pool
+from utils.device_manager import add_device_to_avalible_list
 
 socket_router = APIRouter()
 heartbeat_interval = 10
-socket_enabled = False
+socket_enabled = True
 
 
 @socket_router.websocket("/{device_id}")
@@ -19,22 +19,18 @@ async def websocket_endpoint(websocket: WebSocket, device_id: str):
         return
     await websocket.accept()
     connections[device_id] = websocket
-    await add_device_to_avalible_list(device_id, f"设备({device_id})已连接")
+    await add_device_to_avalible_list(websocket.app.state.redis, device_id, f"设备({device_id})已连接")
     try:
         while True:
             try:
-                message = await websocket.receive_text()
-                if message == "close":
-                    print("get closed from client")
-                    break
+                await websocket.receive_text()
                 connections[device_id] = websocket
                 await websocket.send_text("pong")
                 await asyncio.sleep(heartbeat_interval)
             except WebSocketDisconnect as e:
-                print(e)
+                print(f"设备({device_id})断开了连接")
     except Exception as e:
-        print(f"发生了错误 {e.__traceback__}")
-        connections.pop(device_id)
+        print(f"发生了错误")
 
 
 @socket_router.websocket("/admin/manager")
@@ -44,13 +40,15 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(reason="websocket is not enabled")
         return
     await websocket.accept()
-    redis = await get_manager_pool()
     try:
         while True:
-            _, message = await redis.blpop('notify_queue')
+            _, message = await websocket.app.state.redis.blpop('notify_queue')
             await websocket.send_text(message)
+    except WebSocketDisconnect:
+        print("manager断开了连接")
     except Exception as e:
         print(f"manager发生了错误 {e}")
+        await websocket.close()
 
 
 def toggle_socket():
