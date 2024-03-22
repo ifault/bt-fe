@@ -1,6 +1,7 @@
+from contextlib import asynccontextmanager
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
 from models import Accounts
 from pydantic_models import IAccount
 from utils.service import account_to_dict
@@ -27,3 +28,11 @@ async def store_accounts(accounts: List[IAccount]):
 @account_router.delete("/accounts")
 async def delete_accounts():
     await Accounts.all().delete()
+
+
+
+@asynccontextmanager
+async def lifepan(app: FastAPI):
+    print("lifepan from account_router")
+    yield
+    print("lifepan from account_router")

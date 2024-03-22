@@ -1,39 +1,45 @@
+import asyncio
+import json
 import os
+from contextlib import asynccontextmanager
+from typing import List
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise import Tortoise
-from settings import TORTOISE_ORM
-from routers.login_router import login_router
-from routers.task_router import task_router
-from routers.account_router import account_router
-from routers.ticket_router import ticket_router
-from routers.socket_router import socket_router
-from routers.device_router import device_router
-from utils.device_manager import get_pool
-from pydantic_models import IAccount, ITicket
-from utils.service import subscribe_tasks
-from typing import List
+
 from models import Tasks, TicketHistory
+from pydantic_models import IAccount, ITicket
+from routers.account_router import account_router
+from routers.device_router import device_router
+from routers.login_router import login_router
+from routers.socket_router import socket_router
+from routers.task_router import task_router
+from routers.ticket_router import ticket_router
+from settings import TORTOISE_ORM
+from utils.device_manager import get_pool, get_manager_pool
+from utils.service import subscribe_tasks
 from utils.service import ticket_to_content, account_to_content
-import asyncio
-import json
-app = FastAPI()
 
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await Tortoise.init(config=TORTOISE_ORM)
     await Tortoise.generate_schemas()
     redis = await get_pool()
+    redis_notify = await get_manager_pool()
     app.state.redis = redis
+    app.state.redis_notify = redis_notify
     asyncio.create_task(subscribe_tasks(redis))
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
+    yield
     await Tortoise.close_connections()
     await app.state.redis.delete('device_queue')
-    app.state.redis.close()
+    await app.state.redis_notify.delete('notify_queue')
+    await app.state.redis.close()
+    await app.state.redis_notify.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
